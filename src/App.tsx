@@ -12,8 +12,10 @@ import { useEffect, useMemo, useState } from 'react';
 const BASE = 'https://gbfs.nextbike.net/maps/gbfs/v2/nextbike_bn';
 // const BASE = 'https://gbfs.nextbike.net/maps/gbfs/v2/nextbike_bn/gbfs.json'
 const NEXTBIKE_GBFS_DISCOVERY = `${BASE}/gbfs.json`;
-const FALLBACK_STATION_INFO = `${BASE}/station_information.json`;
-const FALLBACK_STATION_STATUS = `${BASE}/station_status.json`;
+// const FALLBACK_STATION_INFO = `${BASE}/station_information.json`;
+// const FALLBACK_STATION_STATUS = `${BASE}/station_status.json`;
+const FALLBACK_STATION_INFO  = '/api/nextbike/station_information';
+const FALLBACK_STATION_STATUS = '/api/nextbike/station_status';
 
 // --- Helpers ---
 function haversineKm(
@@ -100,52 +102,36 @@ export default function NextbikeNearMe() {
     let cancelled = false;
     async function loadGbfs() {
       try {
-        const res = await fetch(NEXTBIKE_GBFS_DISCOVERY);
-        const data = await res.json();
-        const deFeeds = data?.data?.de?.feeds as
-          | { name: string; url: string }[]
-          | undefined;
-        const infoUrl =
-          deFeeds?.find((f) => f.name === 'station_information')?.url ||
-          FALLBACK_STATION_INFO;
-        const statusUrl =
-          deFeeds?.find((f) => f.name === 'station_status')?.url ||
-          FALLBACK_STATION_STATUS;
-
         const [infoRes, statusRes] = await Promise.all([
-          fetch(infoUrl),
-          fetch(statusUrl),
+          fetch("/api/nextbike/station_information"),
+          fetch("/api/nextbike/station_status"),
         ]);
         const infoJson = await infoRes.json();
         const statusJson = await statusRes.json();
         if (cancelled) return;
-
-        const info: StationInfo[] =
-          infoJson?.data?.stations?.map((s: any) => ({
-            station_id: String(s.station_id),
-            name: s.name,
-            lat: s.lat,
-            lon: s.lon,
-            address: s.address,
-          })) || [];
-
-        const status: StationStatus[] =
-          statusJson?.data?.stations?.map((s: any) => ({
-            station_id: String(s.station_id),
-            num_bikes_available: s.num_bikes_available ?? 0,
-            num_docks_available: s.num_docks_available,
-            is_installed: s.is_installed,
-            is_renting: s.is_renting,
-            is_returning: s.is_returning,
-          })) || [];
-
+  
+        const info: StationInfo[] = infoJson?.data?.stations?.map((s: any) => ({
+          station_id: String(s.station_id),
+          name: s.name,
+          lat: s.lat,
+          lon: s.lon,
+          address: s.address,
+        })) || [];
+  
+        const status: StationStatus[] = statusJson?.data?.stations?.map((s: any) => ({
+          station_id: String(s.station_id),
+          num_bikes_available: s.num_bikes_available ?? 0,
+          num_docks_available: s.num_docks_available,
+          is_installed: s.is_installed,
+          is_renting: s.is_renting,
+          is_returning: s.is_returning,
+        })) || [];
+  
         setStationInfo(info);
         setStationStatus(status);
       } catch (e: any) {
         console.error(e);
-        setError(
-          'Fehler beim Laden der GBFS-Daten. Evtl. blockt CORS oder die URL hat sich geändert.'
-        );
+        setError("Fehler beim Laden der GBFS-Daten (Proxy).");
       }
     }
     loadGbfs();
@@ -153,6 +139,7 @@ export default function NextbikeNearMe() {
       cancelled = true;
     };
   }, []);
+  
 
   const merged = useMemo<MergedStation[]>(() => {
     if (!stationInfo || !stationStatus) return [];
