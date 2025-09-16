@@ -14,8 +14,8 @@ const BASE = 'https://gbfs.nextbike.net/maps/gbfs/v2/nextbike_bn';
 const NEXTBIKE_GBFS_DISCOVERY = `${BASE}/gbfs.json`;
 // const FALLBACK_STATION_INFO = `${BASE}/station_information.json`;
 // const FALLBACK_STATION_STATUS = `${BASE}/station_status.json`;
-const FALLBACK_STATION_INFO  = '/api/nextbike/station_information';
-const FALLBACK_STATION_STATUS = '/api/nextbike/station_status';
+// const FALLBACK_STATION_INFO  = '/api/nextbike/station_information';
+// const FALLBACK_STATION_STATUS = '/api/nextbike/station_status';
 
 // --- Helpers ---
 function haversineKm(
