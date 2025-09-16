@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 // Simple, dependency-free React component that lists free nextbike bikes near the user's location.
 // Uses GBFS (General Bikeshare Feed Specification) from nextbike by TIER.
